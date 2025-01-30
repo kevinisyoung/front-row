@@ -3,9 +3,13 @@
 import { useState, useEffect } from "react"
 import { useSupabase } from "../supabase-provider"
 import { motion } from "framer-motion"
+import { ArrowUp, ArrowDown } from "lucide-react"
 
 interface Vote {
+  id: string;
+  photo_id: string;
   vote_type: boolean;
+  user_id: string;
 }
 
 interface Photo {
@@ -15,9 +19,20 @@ interface Photo {
   user_id: string;
 }
 
+const getUserId = () => {
+  let userId = localStorage.getItem('userId')
+  if (!userId) {
+    userId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+    localStorage.setItem('userId', userId)
+  }
+  return userId
+}
+
 export default function Gallery() {
-  const [photos, setPhotos] = useState<any[]>([])
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [userVotes, setUserVotes] = useState<{[key: string]: boolean}>({})
   const supabase = useSupabase()
+  const userId = getUserId()
 
   useEffect(() => {
     fetchTopPhotos()
@@ -29,7 +44,9 @@ export default function Gallery() {
       .select(`
         *,
         votes (
-          vote_type
+          id,
+          vote_type,
+          user_id
         )
       `)
       .returns<Photo[]>();
@@ -40,14 +57,72 @@ export default function Gallery() {
     }
 
     if (data) {
-      // Sort photos by counting upvotes (true vote_type)
+      // Sort photos by net votes (upvotes - downvotes)
       const sortedPhotos = data.sort((a, b) => {
-        const aUpvotes = a.votes ? a.votes.filter((v: any) => v.vote_type).length : 0;
-        const bUpvotes = b.votes ? b.votes.filter((v: any) => v.vote_type).length : 0;
-        return bUpvotes - aUpvotes;
+        const aScore = a.votes ? a.votes.reduce((acc, vote) => acc + (vote.vote_type ? 1 : -1), 0) : 0;
+        const bScore = b.votes ? b.votes.reduce((acc, vote) => acc + (vote.vote_type ? 1 : -1), 0) : 0;
+        return bScore - aScore;
       });
+
+      // Track user's votes
+      const userVoteMap: {[key: string]: boolean} = {};
+      data.forEach(photo => {
+        const userVote = photo.votes?.find(vote => vote.user_id === userId);
+        if (userVote) {
+          userVoteMap[photo.id] = userVote.vote_type;
+        }
+      });
+
       setPhotos(sortedPhotos);
+      setUserVotes(userVoteMap);
     }
+  }
+
+  const handleVote = async (photoId: string, voteType: boolean) => {
+    const existingVoteType = userVotes[photoId];
+    
+    if (existingVoteType === voteType) {
+      // Remove vote if clicking the same button
+      const { error } = await supabase
+        .from("votes")
+        .delete()
+        .match({ photo_id: photoId, user_id: userId });
+
+      if (!error) {
+        const newUserVotes = { ...userVotes };
+        delete newUserVotes[photoId];
+        setUserVotes(newUserVotes);
+      }
+    } else {
+      // First delete any existing vote
+      await supabase
+        .from("votes")
+        .delete()
+        .match({ photo_id: photoId, user_id: userId });
+
+      // Then insert the new vote
+      const { error } = await supabase
+        .from("votes")
+        .insert({
+          photo_id: photoId,
+          vote_type: voteType,
+          user_id: userId
+        });
+
+      if (!error) {
+        setUserVotes(prev => ({
+          ...prev,
+          [photoId]: voteType
+        }));
+      }
+    }
+
+    fetchTopPhotos(); // Refresh the photos to update vote counts
+  }
+
+  const getVoteCount = (photo: Photo) => {
+    if (!photo.votes) return 0;
+    return photo.votes.reduce((acc, vote) => acc + (vote.vote_type ? 1 : -1), 0);
   }
 
   return (
@@ -62,21 +137,47 @@ export default function Gallery() {
             transition={{ duration: 0.5, delay: index * 0.1 }}
             className="relative bg-white p-4 rounded-lg shadow-md"
           >
-            <div className="relative">
-              <img
-                src={photo.photo_url || "/placeholder.svg"}
-                alt="Concert photo"
-                className="w-full h-auto max-w-2xl rounded-lg"
-                style={{ maxHeight: '80vh' }}
-              />
-              {photo.user_id === localStorage.getItem('userId') && (
-                <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                  Yours
-                </span>
-              )}
-            </div>
-            <div className="absolute bottom-6 right-6 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
-              {photo.votes.filter((v: any) => v.vote_type).length} upvotes
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleVote(photo.id, true)}
+                  className={`p-2 rounded-full transition-colors ${
+                    userVotes[photo.id] === true 
+                      ? "bg-green-500 text-white" 
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  <ArrowUp className="w-6 h-6" />
+                </motion.button>
+                <span className="font-bold text-lg">{getVoteCount(photo)}</span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleVote(photo.id, false)}
+                  className={`p-2 rounded-full transition-colors ${
+                    userVotes[photo.id] === false 
+                      ? "bg-red-500 text-white" 
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  <ArrowDown className="w-6 h-6" />
+                </motion.button>
+              </div>
+              <div className="relative flex-1">
+                <img
+                  src={photo.photo_url || "/placeholder.svg"}
+                  alt="Concert photo"
+                  className="w-full h-auto rounded-lg"
+                  style={{ maxHeight: '80vh' }}
+                />
+                {photo.user_id === userId && (
+                  <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                    Yours
+                  </span>
+                )}
+              </div>
             </div>
           </motion.div>
         ))}
