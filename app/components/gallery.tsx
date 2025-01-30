@@ -135,6 +135,8 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
+            layout
+            layoutId={photo.id}
             className="relative bg-white p-4 rounded-lg shadow-md"
           >
             <div className="flex items-center gap-4">
@@ -165,12 +167,11 @@ export default function Gallery() {
                   <ArrowDown className="w-6 h-6" />
                 </motion.button>
               </div>
-              <div className="relative flex-1">
+              <div className="relative flex-1 flex justify-center">
                 <img
                   src={photo.photo_url || "/placeholder.svg"}
                   alt="Concert photo"
-                  className="w-full h-auto rounded-lg"
-                  style={{ maxHeight: '80vh' }}
+                  className="w-auto h-auto max-w-full max-h-[60vh] rounded-lg object-contain"
                 />
                 {photo.user_id === userId && (
                   <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">

@@ -32,12 +32,20 @@ export default function Home() {
             <p className="text-xl mb-8">
               {concertInfo.name} - {concertInfo.date}
             </p>
-            <button
-              onClick={() => setCurrentView("upload")}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Upload Your Photos
-            </button>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => setCurrentView("upload")}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Upload Your Photos
+              </button>
+              <button
+                onClick={() => setCurrentView("gallery")}
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                View Gallery
+              </button>
+            </div>
           </motion.div>
         )}
         {currentView === "upload" && <PhotoUpload onComplete={() => setCurrentView("voting")} />}
