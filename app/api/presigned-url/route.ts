@@ -8,7 +8,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 if (!process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID || !process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY || !process.env.NEXT_PUBLIC_R2_ENDPOINT) {
   throw new Error('Missing R2 credentials');
-}
+} 
 
 const s3 = new S3Client({
   region: "auto",
