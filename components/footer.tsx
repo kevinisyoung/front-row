@@ -6,17 +6,11 @@ const Footer = () => {
     <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-          <p className="text-center text-sm leading-loose md:text-left">
-            Built by{" "}
+          <p className="text-center text-sm leading-loose md:text-left ml-4">
+            Built by <Link href="https://www.linkedin.com/in/kevinisyoung/" target="_blank" rel="noreferrer" className="font-medium underline underline-offset-4">Kevin Young</Link>.
+            Source code available on{" "}
             <Link
-              href="/"
-              className="font-medium underline underline-offset-4"
-            >
-              FrontRow
-            </Link>
-            . The source code is available on{" "}
-            <Link
-              href="https://github.com/yourusername/frontrow"
+              href="https://github.com/kevinisyoung/front-row-v0"
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
@@ -66,7 +60,7 @@ const Footer = () => {
               </svg>
             </Link>
             <Link
-              href="https://github.com/yourusername/frontrow"
+              href="https://github.com/kevinisyoung/front-row-v0"
               target="_blank"
               rel="noreferrer"
               className="rounded-md p-2 hover:bg-accent hover:text-accent-foreground"
