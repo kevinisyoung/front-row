@@ -119,7 +119,7 @@ export default function Home({ bandName = "hackathon" }) {
             className="text-center max-w-4xl w-full"
           >
             <div className="mb-8">
-              <p className="text-gray-600 text-lg mb-2">Welcome to the FrontRow photo album for</p>
+              <p className="text-gray-600 text-lg mb-2">Welcome to the FrontRow photo album for:</p>
               <h1 className="text-4xl font-bold">
                 {concertInfo.name}
                 <span className="text-gray-500 text-2xl ml-2">
