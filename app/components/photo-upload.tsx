@@ -5,6 +5,7 @@ import { useSupabase } from "../supabase-provider"
 import { motion } from "framer-motion"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { toast } from "sonner"
+import { Image } from "lucide-react"
 
 // Toggle between secure and presigned upload
 const USE_PRESIGNED = false
@@ -74,10 +75,8 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
     if (selectedFiles.length === 0) return
 
     setUploading(true)
-    console.log('Starting upload process...')
     
     try {
-      // Get presigned URLs
       const response = await fetch('/api/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +90,6 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
 
       const { presignedUrls } = await response.json()
 
-      // Upload files using presigned URLs
       await Promise.all(
         selectedFiles.map(async (file, index) => {
           const url = presignedUrls[index]
@@ -107,6 +105,7 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
       )
 
       toast.success("Photos uploaded successfully!")
+      onComplete()
     } catch (error) {
       console.error("Error in upload process:", error)
       toast.error("Failed to upload photos", {
@@ -116,7 +115,6 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
 
     setUploading(false)
     setSelectedFiles([])
-    onComplete()
   }
 
   return (
@@ -124,27 +122,73 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="text-center"
+      className="max-w-md w-full mx-auto bg-white p-8 rounded-lg shadow-md"
     >
-      <h2 className="text-2xl font-bold mb-4">Upload Your Coolest Photos</h2>
-      <div className="mb-2 text-sm text-muted-foreground">
-        Supported formats: JPEG, PNG, GIF, WebP, SVG
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Upload Photos</h2>
+        <button
+          onClick={onComplete}
+          className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
+        >
+          Skip →
+        </button>
       </div>
-      <input 
-        type="file" 
-        onChange={handleFileChange} 
-        multiple 
-        accept={ALLOWED_IMAGE_TYPES.join(',')}
-        className="mb-4"
-        disabled={uploading}
-      />
-      <button
-        onClick={handleUpload}
-        disabled={uploading || selectedFiles.length === 0}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-      >
-        {uploading ? "Uploading..." : "Upload Photos"}
-      </button>
+
+      <div className="mb-6">
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+          <input 
+            type="file" 
+            onChange={handleFileChange} 
+            multiple 
+            accept={ALLOWED_IMAGE_TYPES.join(',')}
+            className="hidden"
+            id="file-upload"
+            disabled={uploading}
+          />
+          <label 
+            htmlFor="file-upload"
+            className="cursor-pointer text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <Image className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <div className="mb-2">
+              <span className="block text-sm text-muted-foreground mb-1">
+                Drag and drop your photos or click to browse
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Supported formats: JPEG, PNG, GIF, WebP, SVG
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      {selectedFiles.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-medium mb-2">Selected Files:</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            {selectedFiles.map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="flex justify-end gap-4">
+        <button
+          onClick={handleUpload}
+          disabled={uploading || selectedFiles.length === 0}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {uploading ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin">↻</span> 
+              Uploading...
+            </span>
+          ) : (
+            "Upload Photos"
+          )}
+        </button>
+      </div>
     </motion.div>
   )
 }
