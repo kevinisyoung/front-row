@@ -19,16 +19,6 @@ const ALLOWED_IMAGE_TYPES = [
   'image/svg+xml'
 ]
 
-// Only used for direct upload
-const s3Client = USE_PRESIGNED ? null : new S3Client({
-  region: "auto",
-  endpoint: process.env.NEXT_PUBLIC_R2_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY!
-  }
-})
-
 const getUserId = () => {
   let userId = localStorage.getItem('userId')
   if (!userId) {

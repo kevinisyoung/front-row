@@ -6,16 +6,16 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
-if (!process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID || !process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY || !process.env.NEXT_PUBLIC_R2_ENDPOINT) {
+if (!process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !process.env.R2_ENDPOINT) {
   throw new Error('Missing R2 credentials');
 } 
 
 const s3 = new S3Client({
   region: "auto",
-  endpoint: process.env.NEXT_PUBLIC_R2_ENDPOINT,
+  endpoint: process.env.R2_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
   }
 });
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       files.map(async (file: { name: string; contentType: string }) => {
         const key = `${spaceId}/${file.name}`;
         const command = new PutObjectCommand({
-          Bucket: process.env.NEXT_PUBLIC_R2_BUCKET_NAME,
+          Bucket: process.env.R2_BUCKET_NAME,
           Key: key,
           ContentType: file.contentType || 'application/octet-stream',
           ACL: 'public-read'
