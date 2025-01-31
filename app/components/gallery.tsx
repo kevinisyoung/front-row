@@ -110,40 +110,27 @@ export default function Gallery({ bandName }: { bandName: string }) {
   const handleVote = async (photoId: string, voteType: boolean) => {
     const existingVoteType = userVotes[photoId];
     
+    // If clicking the same vote type, do nothing
     if (existingVoteType === voteType) {
-      const { error } = await supabase
-        .from("votes")
-        .delete()
-        .match({ photo_id: photoId, user_id: userId });
-
-      if (!error) {
-        const newUserVotes = { ...userVotes };
-        delete newUserVotes[photoId];
-        setUserVotes(newUserVotes);
-      }
-    } else {
-      await supabase
-        .from("votes")
-        .delete()
-        .match({ photo_id: photoId, user_id: userId });
-
-      const { error } = await supabase
-        .from("votes")
-        .insert({
-          photo_id: photoId,
-          vote_type: voteType,
-          user_id: userId
-        });
-
-      if (!error) {
-        setUserVotes(prev => ({
-          ...prev,
-          [photoId]: voteType
-        }));
-      }
+      return;
     }
 
-    fetchTopPhotos();
+    // Simply insert or update the vote
+    const { error } = await supabase
+      .from("votes")
+      .insert({
+        photo_id: photoId,
+        vote_type: voteType,
+        user_id: userId
+      })
+
+    if (!error) {
+      setUserVotes(prev => ({
+        ...prev,
+        [photoId]: voteType
+      }));
+      fetchTopPhotos();
+    }
   }
 
   const getVoteCount = (photo: Photo) => {
