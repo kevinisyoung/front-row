@@ -28,7 +28,7 @@ const getUserId = () => {
   return userId
 }
 
-export default function PhotoUpload({ onComplete }: { onComplete: () => void }) {
+export default function PhotoUpload({ onComplete, bandName }: { onComplete: () => void, bandName: string }) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const supabase = useSupabase()
@@ -67,6 +67,17 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
     setUploading(true)
     
     try {
+      // First get the concert_id
+      const { data: concertData, error: concertError } = await supabase
+        .from("concerts")
+        .select("id")
+        .eq("band_name", bandName)
+        .single();
+
+      if (concertError) {
+        throw new Error("Could not find concert");
+      }
+
       const response = await fetch('/api/presigned-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,7 +85,8 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
           files: selectedFiles.map(file => ({
             name: `${Date.now()}-${file.name}`,
             contentType: file.type
-          }))
+          })),
+          spaceId: concertData.id
         })
       })
 
@@ -90,7 +102,11 @@ export default function PhotoUpload({ onComplete }: { onComplete: () => void }) 
           })
 
           const photoUrl = `${process.env.NEXT_PUBLIC_PHOTOS_BASE_URL}/${url.split('/').slice(-2).join('/')}`
-          await supabase.from("photos").insert({ photo_url: photoUrl, user_id: getUserId() })
+          await supabase.from("photos").insert({ 
+            photo_url: photoUrl, 
+            user_id: getUserId(),
+            concert_id: concertData.id
+          })
         })
       )
 

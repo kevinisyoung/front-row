@@ -30,7 +30,7 @@ const getUserId = () => {
   return userId
 }
 
-export default function Gallery() {
+export default function Gallery({ bandName }: { bandName: string }) {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [userVotes, setUserVotes] = useState<{[key: string]: boolean}>({})
   const [activeSection, setActiveSection] = useState<'top' | 'more'>('top')
@@ -58,6 +58,17 @@ export default function Gallery() {
   }, [])
 
   const fetchTopPhotos = async () => {
+    const { data: concertData, error: concertError } = await supabase
+      .from("concerts")
+      .select("id")
+      .eq("band_name", bandName)
+      .single();
+
+    if (concertError) {
+      console.error("Error fetching concert:", concertError);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("photos")
       .select(`
@@ -68,11 +79,12 @@ export default function Gallery() {
           user_id
         )
       `)
+      .eq("concert_id", concertData.id)
       .returns<Photo[]>();
 
     if (error) {
-      console.error("Error fetching top photos:", error)
-      return
+      console.error("Error fetching top photos:", error);
+      return;
     }
 
     if (data) {

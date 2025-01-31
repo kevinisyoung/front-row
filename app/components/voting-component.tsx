@@ -5,9 +5,9 @@ import { useSupabase } from "../supabase-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import { Progress } from "@/components/ui/progress"
 
-const INITIAL_VOTING_PHOTOS = 4 // You can change this const as needed
+const INITIAL_VOTING_PHOTOS = 4
 
-export default function VotingComponent({ onComplete }: { onComplete: () => void }) {
+export default function VotingComponent({ onComplete, bandName }: { onComplete: () => void, bandName: string }) {
   const [photos, setPhotos] = useState<any[]>([])
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const supabase = useSupabase()
@@ -17,9 +17,23 @@ export default function VotingComponent({ onComplete }: { onComplete: () => void
   }, [])
 
   const fetchPhotos = async () => {
+    // First get the concert_id for the current band
+    const { data: concertData, error: concertError } = await supabase
+      .from("concerts")
+      .select("id")
+      .eq("band_name", bandName)
+      .single()
+
+    if (concertError) {
+      console.error("Error fetching concert:", concertError)
+      return
+    }
+
+    // Then fetch photos for this specific concert
     const { data, error } = await supabase
       .from("photos")
       .select("*")
+      .eq("concert_id", concertData.id)
       .order("created_at", { ascending: false })
       .limit(INITIAL_VOTING_PHOTOS)
 

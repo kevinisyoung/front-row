@@ -170,9 +170,9 @@ export default function Home({ bandName = "hackathon" }) {
             </div>
           </motion.div>
         )}
-        {currentView === "upload" && <PhotoUpload onComplete={() => setCurrentView("voting")} />}
-        {currentView === "voting" && <VotingComponent onComplete={() => setCurrentView("gallery")} />}
-        {currentView === "gallery" && <Gallery />}
+        {currentView === "upload" && <PhotoUpload onComplete={() => setCurrentView("voting")} bandName={bandName} />}
+        {currentView === "voting" && <VotingComponent onComplete={() => setCurrentView("gallery")} bandName={bandName} />}
+        {currentView === "gallery" && <Gallery bandName={bandName} />}
         {showCreateConcert && <CreateConcert />}
       </main>
       <Footer />
