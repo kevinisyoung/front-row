@@ -9,6 +9,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import CreateConcert from "./create-concert"
 import { useSupabase } from "../supabase-provider"
+import Link from "next/link"
 
 interface Photo {
   id: string;
@@ -21,6 +22,7 @@ export default function Home({ bandName = "hackathon" }) {
   const [showCreateConcert, setShowCreateConcert] = useState(false)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [concertNotFound, setConcertNotFound] = useState(false)
   const supabase = useSupabase()
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function Home({ bandName = "hackathon" }) {
 
       if (concertError) {
         console.error("Error fetching concert:", concertError)
+        setConcertNotFound(true)
         return
       }
 
@@ -75,6 +78,34 @@ export default function Home({ bandName = "hackathon" }) {
       return () => clearInterval(interval)
     }
   }, [photos])
+
+  if (concertNotFound) {
+    return (
+      <>
+        <Header />
+        <main className="flex min-h-screen flex-col items-center justify-center p-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl font-bold mb-6">No Concert Found</h1>
+            <p className="text-gray-600 mb-8">
+              The concert you're looking for doesn't exist.
+            </p>
+            <Link 
+              href="/"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:transform hover:scale-105"
+            >
+              Go to Home
+            </Link>
+          </motion.div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
