@@ -110,7 +110,7 @@ export default function Home({ bandName = "hackathon" }) {
   return (
     <>
       <Header />
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <main className="flex min-h-screen flex-col items-center justify-center p-10 md:p-24">
         {currentView === "welcome" && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
