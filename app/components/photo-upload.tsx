@@ -22,7 +22,8 @@ const ALLOWED_IMAGE_TYPES = [
 const getUserId = () => {
   let userId = localStorage.getItem('userId')
   if (!userId) {
-    userId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+    // Generate a proper UUID v4
+    userId = crypto.randomUUID()
     localStorage.setItem('userId', userId)
   }
   return userId
