@@ -140,11 +140,11 @@ export default function Gallery() {
   }
 
   return (
-    <div className="flex gap-8">
-      {/* Sticky sidebar with headings */}
-      <div className="w-48 pt-4 sticky top-20 h-[calc(100vh-80px)] flex flex-col">
+    <div className="flex flex-col md:flex-row gap-8">
+      {/* Sticky section - top on mobile, sidebar on desktop */}
+      <div className="md:w-48 sticky top-0 md:top-20 bg-white/80 backdrop-blur-sm z-10 md:h-[calc(100vh-80px)] flex md:flex-col gap-4 md:gap-0 p-4 md:p-0">
         <motion.h2 
-          className={`text-2xl font-bold transition-opacity duration-300 ${
+          className={`text-xl md:text-2xl font-bold transition-opacity duration-300 ${
             activeSection === 'top' ? 'opacity-100' : 'opacity-40'
           }`}
         >
@@ -152,7 +152,7 @@ export default function Gallery() {
         </motion.h2>
         {photos.length > FULL_SIZE_PHOTO_COUNT && (
           <motion.h2 
-            className={`text-2xl font-bold mt-4 transition-opacity duration-300 ${
+            className={`text-xl md:text-2xl font-bold md:mt-4 transition-opacity duration-300 ${
               activeSection === 'more' ? 'opacity-100' : 'opacity-40'
             }`}
           >
@@ -161,8 +161,8 @@ export default function Gallery() {
         )}
       </div>
 
-      {/* Main content container */}
-      <div className="container mx-auto px-4 max-w-2xl pb-20">
+      {/* Main content container - full width on mobile */}
+      <div className="container mx-auto px-4 md:max-w-2xl pb-20">
         {/* Top photos in single column */}
         <div className="flex flex-col gap-8 mb-12 mt-4">
           {photos.slice(0, FULL_SIZE_PHOTO_COUNT).map((photo, index) => (
@@ -220,11 +220,11 @@ export default function Gallery() {
           ))}
         </div>
 
-        {/* Remaining photos in two columns */}
+        {/* Remaining photos in single column on mobile, two columns on desktop */}
         {photos.length > FULL_SIZE_PHOTO_COUNT && (
           <div 
             id="more-photos-section" 
-            className="grid grid-cols-2 gap-4 mt-4 min-h-[100px]"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 min-h-[100px]"
           >
             {photos.slice(FULL_SIZE_PHOTO_COUNT).map((photo, index) => (
               <motion.div
